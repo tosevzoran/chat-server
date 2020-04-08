@@ -1,0 +1,11 @@
+{
+    "name": "zoki/chat-server",
+    "require": {
+        "cboden/ratchet": "^0.4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChatServer\\": "src/"
+        }
+    }
+}
