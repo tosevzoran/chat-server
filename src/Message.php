@@ -10,6 +10,7 @@ class Message implements JsonSerializable {
   public const ACTION_EDIT = 'edit';
   public const ACTION_DELETE = 'delete';
   public const ACTION_REGISTER = 'register';
+  public const ACTION_GREETING = 'greeting';
 
   public $id;
   public $text;
