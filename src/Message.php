@@ -28,21 +28,14 @@ class Message implements JsonSerializable {
     $this->timestamp = time();
   }
 
-  public static function createFromString(string $data, string $username) {
+  public static function createFromString(string $data) {
     $message = new Message();
     $decodedMessage = json_decode($data);
 
-    if ($decodedMessage->action === self::ACTION_REGISTER) {
-      $message->username = $decodedMessage->text;
-      $message->action = $decodedMessage->action;
-
-      return $message;
-    }
-
-    $message->text = $decodedMessage->text;
-    $message->username = $username;
-    $message->action = $decodedMessage->action;
-    $message->timestamp = $decodedMessage->timestamp;
+    $message->text = isset($decodedMessage->text) ? $decodedMessage->text : '';
+    $message->username = isset($decodedMessage->username) ? $decodedMessage->username : '';
+    $message->action = isset($decodedMessage->action) ? $decodedMessage->action : '';
+    $message->timestamp = isset($message->timestamp) ? $message->timestamp : time();
 
     return $message;
   }
@@ -50,10 +43,10 @@ class Message implements JsonSerializable {
   public static function createFromArray(array $data) {
     $message = new Message();
 
-    $message->text = isset($data['text']) ?? $data['text'];
-    $message->username = isset($data['username']) ?? $data['username'];
-    $message->action = isset($data['action']) ?? $data['action'];
-    $message->timestamp = isset($data['timestamp']) ?? $data['timestamp'];
+    $message->text = isset($data['text']) ? $data['text'] : '';
+    $message->username = isset($data['username']) ? $data['username'] : '';
+    $message->action = isset($data['action']) ? $data['action'] : '';
+    $message->timestamp = isset($data['timestamp']) ? $data['timestamp'] : time();
 
     return $message;
   }

@@ -35,11 +35,7 @@ class ChatServer implements MessageComponentInterface
   }
 
   private function handleMessage(ConnectionInterface $from, $msg) {
-    $connectionData = $this->getConnectionData($from);
-
-    $username = isset($connectionData['username']) ?? $connectionData['username'];
-
-    $message = Message::createFromString($msg, $username);
+    $message = Message::createFromString($msg);
 
     switch ($message->action) {
       case Message::ACTION_REGISTER:
@@ -47,6 +43,7 @@ class ChatServer implements MessageComponentInterface
 
         $userJoined = Message::createFromArray([
           'username' => 'Meetingbot',
+          'action' => Message::ACTION_REGISTER,
           'text' => "{$message->username} joined.",
         ]);
 
