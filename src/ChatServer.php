@@ -45,12 +45,12 @@ class ChatServer implements MessageComponentInterface
   private function handleMessage(ConnectionInterface $from, $msg) {
     $message = Message::createFromString($msg);
 
+    $connectionData = $this->getConnectionData($from);
+    $user = $connectionData['user'];
+
     switch ($message->type) {
       case Message::TYPE_MESSAGE:
-        $connectionData = $this->getConnectionData($from);
-        $user = $connectionData['user'];
-
-        $message->user = $user->user;
+        $message->user = $user;
         $message->username = $user->username;
 
         $this->messageHistory[$message->id] = $message;
@@ -86,6 +86,8 @@ class ChatServer implements MessageComponentInterface
       'type' => Message::TYPE_JOIN,
       'text' => "{$user->username} joined.",
     ]);
+
+    $userJoined->user = $user;
 
     $this->sendToAll($userJoined, $conn);
   }
