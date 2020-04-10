@@ -10,32 +10,23 @@ use Ramsey\Uuid\Uuid;
 class ChatServer implements MessageComponentInterface
 {
   private $connections;
+  private $messageHistory;
 
   public function __construct()
   {
     $this->connections = new SplObjectStorage();
+    $this->messageHistory = [];
   }
 
   public function onOpen(ConnectionInterface $conn) {
-    $uuid = Uuid::uuid4();
-    $username = 'Anonymous_' . substr($uuid->toString(), 0, 5);
+    $user = $this->createNewUser();
 
-    echo "{$username} Connected" . PHP_EOL;
+    echo "{$user->username} Connected" . PHP_EOL;
 
-    $userJoined = Message::createFromArray([
-      'username' => 'Meetingbot',
-      'action' => Message::ACTION_REGISTER,
-      'text' => "{$username} joined.",
-    ]);
+    $this->setConnectionData($conn, ['user' => $user]);
 
-    $greeting = Message::createFromArray([
-      'action' => Message::ACTION_GREETING,
-      'username' => $username,
-    ]);
-
-    $this->sendTo($greeting, $conn);
-    $this->setConnectionData($conn, ['username' => $username]);
-    $this->sendToAll($userJoined, $conn);
+    $this->sendGreetings($conn);
+    $this->sendJoinNotification($conn);
   }
 
   public function onMessage(ConnectionInterface $from, $msg) {
@@ -54,27 +45,49 @@ class ChatServer implements MessageComponentInterface
   private function handleMessage(ConnectionInterface $from, $msg) {
     $message = Message::createFromString($msg);
 
-    switch ($message->action) {
-      case Message::ACTION_REGISTER:
-        $this->setConnectionData($from, ['username' => $message->username]);
-        // TODO: send update notificaiotn
-        break;
-      case Message::ACTION_NEW:
+    switch ($message->type) {
+      case Message::TYPE_MESSAGE:
         $connectionData = $this->getConnectionData($from);
+        $user = $connectionData['user'];
 
-        if (empty($message->username)) {
-          $message->username = $connectionData['username'];
-        }
+        $message->user = $user->user;
+        $message->username = $user->username;
 
+        $this->messageHistory[$message->id] = $message;
         $this->sendToAll($message);
-        break;
-      case Message::ACTION_EDIT:
-        break;
-      case Message::ACTION_DELETE:
+
         break;
       default:
         break;
     }
+  }
+
+  private function sendGreetings(ConnectionInterface $to) {
+    $connectionData = $this->getConnectionData($to);
+    $loggedUser = $connectionData['user'];
+    $connectedUsers = [];
+
+    $message = [
+      'type' => Message::TYPE_GREETING,
+      'loggedUser' => $loggedUser,
+      'messageHistory' => $this->messageHistory,
+      'connectedUsers' => $connectedUsers,
+    ];
+
+    $to->send(json_encode($message));
+  }
+
+  private function sendJoinNotification(ConnectionInterface $conn) {
+    $connectionData = $this->getConnectionData($conn);
+    $user = $connectionData['user'];
+
+    $userJoined = Message::createFromArray([
+      'username' => 'Meetingbot',
+      'type' => Message::TYPE_JOIN,
+      'text' => "{$user->username} joined.",
+    ]);
+
+    $this->sendToAll($userJoined, $conn);
   }
 
   private function sendToAll(Message $m, ConnectionInterface $exclude = null) {
@@ -97,5 +110,15 @@ class ChatServer implements MessageComponentInterface
 
   private function getConnectionData(ConnectionInterface $c) {
       return $this->connections->offsetGet($c);
+  }
+
+  private function createNewUser() {
+    $uuid = Uuid::uuid4();
+    $username = 'Anonymous_' . substr($uuid->toString(), 0, 5);
+
+    return User::createFromArray([
+      'id' => $uuid->toString(),
+      'username' => $username,
+    ]);
   }
 }

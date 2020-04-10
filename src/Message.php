@@ -6,17 +6,16 @@ use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 
 class Message implements JsonSerializable {
-  public const ACTION_NEW = 'new';
-  public const ACTION_EDIT = 'edit';
-  public const ACTION_DELETE = 'delete';
-  public const ACTION_REGISTER = 'register';
-  public const ACTION_GREETING = 'greeting';
+  public const TYPE_JOIN = 'join';
+  public const TYPE_GREETING = 'greeting';
+  public const TYPE_MESSAGE = 'message';
 
   public $id;
   public $text;
   public $username;
   public $timestamp;
-  public $action;
+  public $type;
+  public $user;
 
   public function __construct()
   {
@@ -25,8 +24,9 @@ class Message implements JsonSerializable {
     $this->id = $uuid->toString();
     $this->text = '';
     $this->username = '';
-    $this->action = '';
+    $this->type = '';
     $this->timestamp = time();
+    $this->user = new User();
   }
 
   public static function createFromString(string $data) {
@@ -35,7 +35,7 @@ class Message implements JsonSerializable {
 
     $message->text = isset($decodedMessage->text) ? $decodedMessage->text : '';
     $message->username = isset($decodedMessage->username) ? $decodedMessage->username : '';
-    $message->action = isset($decodedMessage->action) ? $decodedMessage->action : '';
+    $message->type = isset($decodedMessage->type) ? $decodedMessage->type : '';
     $message->timestamp = isset($message->timestamp) ? $message->timestamp : time();
 
     return $message;
@@ -46,7 +46,7 @@ class Message implements JsonSerializable {
 
     $message->text = isset($data['text']) ? $data['text'] : '';
     $message->username = isset($data['username']) ? $data['username'] : '';
-    $message->action = isset($data['action']) ? $data['action'] : '';
+    $message->type = isset($data['type']) ? $data['type'] : '';
     $message->timestamp = isset($data['timestamp']) ? $data['timestamp'] : time();
 
     return $message;
@@ -58,7 +58,8 @@ class Message implements JsonSerializable {
       'text' => $this->text,
       'username' => $this->username,
       'timestamp' => $this->timestamp,
-      'action' => $this->action,
+      'type' => $this->type,
+      'user' => isset($this->user) ? $this->user->toArray() : [],
     ];
-}
+  }
 }
