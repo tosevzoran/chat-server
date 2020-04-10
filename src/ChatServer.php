@@ -34,7 +34,22 @@ class ChatServer implements MessageComponentInterface
   }
 
   public function onClose(ConnectionInterface $conn) {
-    echo "Closed".PHP_EOL;
+    $connectionData = $this->getConnectionData($conn);
+    $user = $connectionData['user'];
+
+    $messageText = "{$user->username} left.";
+    $message = Message::createFromArray([
+      'text' => $messageText,
+      'username' => 'Meetingbot',
+      'type' => Message::TYPE_LEAVE,
+      'user' => $user,
+    ]);
+
+    $this->sendToAll($message, $conn);
+
+    $this->connections->offsetUnset($conn);
+
+    echo $messageText . PHP_EOL;
   }
 
   public function onError(ConnectionInterface $conn, \Exception $e) {
@@ -65,7 +80,7 @@ class ChatServer implements MessageComponentInterface
   private function sendGreetings(ConnectionInterface $to) {
     $connectionData = $this->getConnectionData($to);
     $loggedUser = $connectionData['user'];
-    $connectedUsers = [];
+    $connectedUsers = $this->getUsers();
 
     $message = [
       'type' => Message::TYPE_GREETING,
@@ -85,9 +100,8 @@ class ChatServer implements MessageComponentInterface
       'username' => 'Meetingbot',
       'type' => Message::TYPE_JOIN,
       'text' => "{$user->username} joined.",
+      'user' => $user,
     ]);
-
-    $userJoined->user = $user;
 
     $this->sendToAll($userJoined, $conn);
   }
@@ -122,5 +136,16 @@ class ChatServer implements MessageComponentInterface
       'id' => $uuid->toString(),
       'username' => $username,
     ]);
+  }
+
+  private function getUsers() {
+    $users = [];
+
+    foreach ($this->connections as $connection) {
+      $connectionData = $this->getConnectionData($connection);
+      $users[] = $connectionData['user'];
+    }
+
+    return $users;
   }
 }

@@ -7,6 +7,7 @@ use Ramsey\Uuid\Uuid;
 
 class Message implements JsonSerializable {
   public const TYPE_JOIN = 'join';
+  public const TYPE_LEAVE = 'leave';
   public const TYPE_GREETING = 'greeting';
   public const TYPE_MESSAGE = 'message';
 
@@ -46,6 +47,7 @@ class Message implements JsonSerializable {
 
     $message->text = isset($data['text']) ? $data['text'] : '';
     $message->username = isset($data['username']) ? $data['username'] : '';
+    $message->user = isset($data['user']) ? $data['user'] : null;
     $message->type = isset($data['type']) ? $data['type'] : '';
     $message->timestamp = isset($data['timestamp']) ? $data['timestamp'] : time();
 
