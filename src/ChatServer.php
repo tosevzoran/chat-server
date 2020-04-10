@@ -36,6 +36,7 @@ class ChatServer implements MessageComponentInterface
   public function onClose(ConnectionInterface $conn) {
     $connectionData = $this->getConnectionData($conn);
     $user = $connectionData['user'];
+    $user->isDeleted = true;
 
     $messageText = "{$user->username} left.";
     $message = Message::createFromArray([
@@ -45,9 +46,9 @@ class ChatServer implements MessageComponentInterface
       'user' => $user,
     ]);
 
-    $this->sendToAll($message, $conn);
+    $this->setConnectionData($conn, ['user' => $user]);
 
-    $this->connections->offsetUnset($conn);
+    $this->sendToAll($message, $conn);
 
     echo $messageText . PHP_EOL;
   }

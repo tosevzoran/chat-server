@@ -8,6 +8,7 @@ use Ramsey\Uuid\Uuid;
 class User implements JsonSerializable {
   public $id;
   public $username;
+  public $isDeleted;
 
   public function __construct()
   {
@@ -15,6 +16,7 @@ class User implements JsonSerializable {
 
     $this->id = $uuid->toString();
     $this->username = '';
+    $this->isDeleted = false;
   }
 
   public static function createFromArray(array $data) {
@@ -29,6 +31,7 @@ class User implements JsonSerializable {
     return [
       'id' => $this->id,
       'username' => $this->username,
+      'isDeleted' => $this->isDeleted,
     ];
   }
 
