@@ -11,11 +11,17 @@ class ChatServer implements MessageComponentInterface
 {
   private $connections;
   private $messageHistory;
+  private $meetingBot;
 
   public function __construct()
   {
     $this->connections = new SplObjectStorage();
     $this->messageHistory = [];
+    $this->meetingBot = User::createFromArray([
+      'username' => 'Meetingbot'
+    ]);
+    // This is cheating (used to hide the bot from the list)
+    $this->meetingBot->isDeleted = true;
   }
 
   public function onOpen(ConnectionInterface $conn) {
@@ -57,7 +63,10 @@ class ChatServer implements MessageComponentInterface
       'text' => $messageText,
       'username' => 'Meetingbot',
       'type' => Message::TYPE_LEAVE,
-      'user' => $user,
+      'data' => [
+        'user' => $user,
+      ],
+      'sender' => $this->meetingBot,
     ]);
 
     $this->setConnectionData($conn, ['user' => $user]);
@@ -80,7 +89,7 @@ class ChatServer implements MessageComponentInterface
 
     switch ($message->type) {
       case Message::TYPE_MESSAGE:
-        $message->user = $user;
+        $message->sender = $user;
         $message->username = $user->username;
 
         $this->messageHistory[$message->id] = $message;
@@ -124,9 +133,12 @@ class ChatServer implements MessageComponentInterface
 
     $message = [
       'type' => Message::TYPE_GREETING,
-      'loggedUser' => $loggedUser,
-      'messageHistory' => $this->messageHistory,
-      'connectedUsers' => $connectedUsers,
+      'sender' => $this->meetingBot,
+      'data' => [
+        'loggedUser' => $loggedUser,
+        'messageHistory' => $this->messageHistory,
+        'connectedUsers' => $connectedUsers,
+      ]
     ];
 
     $to->send(json_encode($message));
@@ -140,7 +152,10 @@ class ChatServer implements MessageComponentInterface
       'username' => 'Meetingbot',
       'type' => Message::TYPE_JOIN,
       'text' => "{$user->username} joined.",
-      'user' => $user,
+      'data' => [
+        'user' => $user,
+      ],
+      'sender' => $this->meetingBot,
     ]);
 
     $this->sendToAll($userJoined, $conn);

@@ -18,9 +18,10 @@ class Message implements JsonSerializable {
   public $username;
   public $timestamp;
   public $type;
-  public $user;
+  public $sender;
   public $isEdited;
   public $isDeleted;
+  public $data;
 
   public function __construct()
   {
@@ -31,9 +32,10 @@ class Message implements JsonSerializable {
     $this->username = '';
     $this->type = '';
     $this->timestamp = time();
-    $this->user = new User();
+    $this->sender = new User();
     $this->isEdited = false;
     $this->isDeleted = false;
+    $this->data = [];
   }
 
   public static function createFromString(string $data) {
@@ -60,11 +62,14 @@ class Message implements JsonSerializable {
       ? $data['id']
       : $message->id;
 
+    $sender = isset($data['sender']) && $data['sender'] ? $data['sender'] : null;
+
     $message->id = $messageId;
+    $message->sender = $sender;
     $message->text = isset($data['text']) ? $data['text'] : '';
     $message->username = isset($data['username']) ? $data['username'] : '';
-    $message->user = isset($data['user']) ? $data['user'] : null;
     $message->type = isset($data['type']) ? $data['type'] : '';
+    $message->data = isset($data['data']) ? $data['data'] : '';
     $message->timestamp = isset($data['timestamp']) ? $data['timestamp'] : time();
 
     return $message;
@@ -77,9 +82,10 @@ class Message implements JsonSerializable {
       'username' => $this->username,
       'timestamp' => $this->timestamp,
       'type' => $this->type,
-      'user' => isset($this->user) ? $this->user->toArray() : [],
+      'sender' => isset($this->sender) ? $this->sender->toArray() : [],
       'isEdited' => $this->isEdited,
       'isDeleted' => $this->isDeleted,
+      'data' => $this->data,
     ];
   }
 }
