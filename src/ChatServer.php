@@ -73,6 +73,19 @@ class ChatServer implements MessageComponentInterface
         $this->sendToAll($message);
 
         break;
+      case Message::TYPE_EDIT:
+        $existingMessage = isset($message->id) ? $this->messageHistory[$message->id] : null;
+
+        if (!empty($existingMessage)) {
+          $existingMessage->text = $message->text;
+          $existingMessage->isEdited = true;
+
+          $this->messageHistory[$existingMessage->id] = $existingMessage;
+
+          $this->sendToAll($existingMessage);
+        }
+
+      break;
       default:
         break;
     }

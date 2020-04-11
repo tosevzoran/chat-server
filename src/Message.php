@@ -10,6 +10,7 @@ class Message implements JsonSerializable {
   public const TYPE_LEAVE = 'leave';
   public const TYPE_GREETING = 'greeting';
   public const TYPE_MESSAGE = 'message';
+  public const TYPE_EDIT = 'edit';
 
   public $id;
   public $text;
@@ -17,6 +18,7 @@ class Message implements JsonSerializable {
   public $timestamp;
   public $type;
   public $user;
+  public $isEdited;
 
   public function __construct()
   {
@@ -28,12 +30,14 @@ class Message implements JsonSerializable {
     $this->type = '';
     $this->timestamp = time();
     $this->user = new User();
+    $this->isEdited = false;
   }
 
   public static function createFromString(string $data) {
     $message = new Message();
     $decodedMessage = json_decode($data);
 
+    $message->id = isset($decodedMessage->id) ? $decodedMessage->id : $message->id;
     $message->text = isset($decodedMessage->text) ? $decodedMessage->text : '';
     $message->username = isset($decodedMessage->username) ? $decodedMessage->username : '';
     $message->type = isset($decodedMessage->type) ? $decodedMessage->type : '';
@@ -45,6 +49,7 @@ class Message implements JsonSerializable {
   public static function createFromArray(array $data) {
     $message = new Message();
 
+    $message->id = isset($data['id']) ? $data['id']: $message->id;
     $message->text = isset($data['text']) ? $data['text'] : '';
     $message->username = isset($data['username']) ? $data['username'] : '';
     $message->user = isset($data['user']) ? $data['user'] : null;
@@ -62,6 +67,7 @@ class Message implements JsonSerializable {
       'timestamp' => $this->timestamp,
       'type' => $this->type,
       'user' => isset($this->user) ? $this->user->toArray() : [],
+      'isEdited' => $this->isEdited,
     ];
   }
 }
