@@ -28,10 +28,12 @@ class ChatServer implements MessageComponentInterface
       $user = $this->createNewUser();
     }
 
+    if (!empty($prevConnection)) {
+      $this->connections->offsetUnset($prevConnection);
+    }
+
     $message = $user->isDeleted ? "{$user->username} Reconnected" : "{$user->username} Connected.";
     $user->isDeleted = false;
-
-    $this->connections->offsetUnset($prevConnection);
 
     $this->setConnectionData($conn, ['user' => $user]);
 
@@ -86,9 +88,9 @@ class ChatServer implements MessageComponentInterface
 
         break;
       case Message::TYPE_EDIT:
-        $existingMessage = isset($message->id) ? $this->messageHistory[$message->id] : null;
+        $existingMessage = $this->getMessageForUser($message->id, $user);
 
-        if (!empty($existingMessage) && $existingMessage->user->id === $user->id) {
+        if ($existingMessage) {
           $existingMessage->text = $message->text;
           $existingMessage->isEdited = true;
 
@@ -97,6 +99,18 @@ class ChatServer implements MessageComponentInterface
           $this->sendToAll($existingMessage);
         }
 
+        break;
+      case Message::TYPE_DELETE:
+        $existingMessage = $this->getMessageForUser($message->id, $user);
+
+        if ($existingMessage) {
+          $existingMessage->text = '';
+          $existingMessage->isDeleted = true;
+
+          $this->messageHistory[$existingMessage->id] = $existingMessage;
+
+          $this->sendToAll($existingMessage);
+        }
         break;
       default:
         break;
@@ -186,5 +200,19 @@ class ChatServer implements MessageComponentInterface
     }
 
     return [null, null];
+  }
+
+  private function getMessageForUser($messageId, $user) {
+    $userMessage = $messageId ? $this->messageHistory[$messageId] : null;
+
+    if (empty($userMessage)) {
+      return null;
+    }
+
+    if ($userMessage->user->id !== $user->id) {
+      return null;
+    }
+
+    return $userMessage;
   }
 }

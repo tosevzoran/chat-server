@@ -11,6 +11,7 @@ class Message implements JsonSerializable {
   public const TYPE_GREETING = 'greeting';
   public const TYPE_MESSAGE = 'message';
   public const TYPE_EDIT = 'edit';
+  public const TYPE_DELETE = 'delete';
 
   public $id;
   public $text;
@@ -19,6 +20,7 @@ class Message implements JsonSerializable {
   public $type;
   public $user;
   public $isEdited;
+  public $isDeleted;
 
   public function __construct()
   {
@@ -31,6 +33,7 @@ class Message implements JsonSerializable {
     $this->timestamp = time();
     $this->user = new User();
     $this->isEdited = false;
+    $this->isDeleted = false;
   }
 
   public static function createFromString(string $data) {
@@ -76,6 +79,7 @@ class Message implements JsonSerializable {
       'type' => $this->type,
       'user' => isset($this->user) ? $this->user->toArray() : [],
       'isEdited' => $this->isEdited,
+      'isDeleted' => $this->isDeleted,
     ];
   }
 }
