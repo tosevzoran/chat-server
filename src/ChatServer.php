@@ -19,14 +19,26 @@ class ChatServer implements MessageComponentInterface
   }
 
   public function onOpen(ConnectionInterface $conn) {
-    $user = $this->createNewUser();
+    parse_str($conn->httpRequest->getUri()->getQuery(), $queryParams);
 
-    echo "{$user->username} Connected" . PHP_EOL;
+    $userId = isset($queryParams['userId']) ? $queryParams['userId'] : '';
+    [$user, $prevConnection] = $this->getUserAndConnection($userId);
+
+    if (empty($user)) {
+      $user = $this->createNewUser();
+    }
+
+    $message = $user->isDeleted ? "{$user->username} Reconnected" : "{$user->username} Connected.";
+    $user->isDeleted = false;
+
+    $this->connections->offsetUnset($prevConnection);
 
     $this->setConnectionData($conn, ['user' => $user]);
 
     $this->sendGreetings($conn);
     $this->sendJoinNotification($conn);
+
+    echo $message . PHP_EOL;
   }
 
   public function onMessage(ConnectionInterface $from, $msg) {
@@ -85,7 +97,7 @@ class ChatServer implements MessageComponentInterface
           $this->sendToAll($existingMessage);
         }
 
-      break;
+        break;
       default:
         break;
     }
@@ -161,5 +173,18 @@ class ChatServer implements MessageComponentInterface
     }
 
     return $users;
+  }
+
+  private function getUserAndConnection($userId) {
+    foreach ($this->connections as $connection) {
+      $connectionData = $this->getConnectionData($connection);
+      $user = $connectionData['user'];
+
+      if ($user->id === $userId) {
+        return [$user, $connection];
+      }
+    }
+
+    return [null, null];
   }
 }
