@@ -37,7 +37,11 @@ class Message implements JsonSerializable {
     $message = new Message();
     $decodedMessage = json_decode($data);
 
-    $message->id = isset($decodedMessage->id) ? $decodedMessage->id : $message->id;
+    $messageId = isset($decodedMessage->id) && $decodedMessage->id
+      ? $decodedMessage->id
+      : $message->id;
+
+    $message->id = $messageId;
     $message->text = isset($decodedMessage->text) ? $decodedMessage->text : '';
     $message->username = isset($decodedMessage->username) ? $decodedMessage->username : '';
     $message->type = isset($decodedMessage->type) ? $decodedMessage->type : '';
@@ -49,7 +53,11 @@ class Message implements JsonSerializable {
   public static function createFromArray(array $data) {
     $message = new Message();
 
-    $message->id = isset($data['id']) ? $data['id']: $message->id;
+    $messageId = isset($data['id']) && $data['id']
+      ? $data['id']
+      : $message->id;
+
+    $message->id = $messageId;
     $message->text = isset($data['text']) ? $data['text'] : '';
     $message->username = isset($data['username']) ? $data['username'] : '';
     $message->user = isset($data['user']) ? $data['user'] : null;

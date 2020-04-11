@@ -88,7 +88,7 @@ class ChatServer implements MessageComponentInterface
       case Message::TYPE_EDIT:
         $existingMessage = isset($message->id) ? $this->messageHistory[$message->id] : null;
 
-        if (!empty($existingMessage)) {
+        if (!empty($existingMessage) && $existingMessage->user->id === $user->id) {
           $existingMessage->text = $message->text;
           $existingMessage->isEdited = true;
 
