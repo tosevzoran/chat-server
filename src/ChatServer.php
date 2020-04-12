@@ -121,6 +121,22 @@ class ChatServer implements MessageComponentInterface
           $this->sendToAll($existingMessage);
         }
         break;
+      case Message::TYPE_USERNAME_UPDATE:
+          $oldName = $user->username;
+          $user->username = $message->text;
+          $this->setConnectionData($from, ['user' => $user]);
+
+          $updateMessage = Message::createFromArray([
+            'sender' => $this->meetingBot,
+            'text' => "{$oldName} changed name to {$user->username}",
+            'type' => Message::TYPE_USERNAME_UPDATE,
+            'data' => [
+              'user' => $user,
+            ]
+          ]);
+
+          $this->sendToAll($updateMessage);
+        break;
       default:
         break;
     }
@@ -224,7 +240,7 @@ class ChatServer implements MessageComponentInterface
       return null;
     }
 
-    if ($userMessage->user->id !== $user->id) {
+    if ($userMessage->sender->id !== $user->id) {
       return null;
     }
 

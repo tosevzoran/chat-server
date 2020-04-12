@@ -12,6 +12,7 @@ class Message implements JsonSerializable {
   public const TYPE_MESSAGE = 'message';
   public const TYPE_EDIT = 'edit';
   public const TYPE_DELETE = 'delete';
+  public const TYPE_USERNAME_UPDATE = 'username-update';
 
   public $id;
   public $text;
