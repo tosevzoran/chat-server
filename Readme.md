@@ -8,7 +8,7 @@ Setup instructions:
 2. Install the dependencies: `composer install`
 3. Start the soket server: `php index.php`
 
-By default the socket is set to **8080**. To set a different port use the `-p` flag (eg: `php index.php -p 4000`).
+By default the socket is set to **8080**. To set a different port use the `-p` flag (eg: `php index.php -p=4000`).
 
 At the moment only one thread is supported.
 
