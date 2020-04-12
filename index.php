@@ -7,6 +7,10 @@ use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
 use ChatServer\ChatServer;
 
+$shortOpts = 'p::';
+
+$options = getopt($shortOpts);
+$port = isset($options['p']) && is_numeric($options['p']) ? $options['p'] : 8080;
 
 $server = IoServer::factory(
     new HttpServer(
@@ -14,7 +18,7 @@ $server = IoServer::factory(
             new ChatServer()
         )
     ),
-    8080
+    $port
 );
 
 $server->run();
